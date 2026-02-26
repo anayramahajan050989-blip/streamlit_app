@@ -115,7 +115,6 @@ with col2:
 # FLOATING CHATBOT
 # -----------------------------
 st.markdown('<div class="chat-wrapper">', unsafe_allow_html=True)
-
 st.markdown('<div class="chat-box">', unsafe_allow_html=True)
 
 st.write("### AI Assistant")
@@ -123,24 +122,31 @@ st.write("### AI Assistant")
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-for m in st.session_state.messages:
-    st.write(f"**{m['role']}**: {m['content']}")
+# Show chat history
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.write(msg["content"])
 
-user_input = st.text_input("Ask about Rajat")
+# Chat input (this prevents loops)
+prompt = st.chat_input("Ask about Rajat Mahajan")
 
-if user_input:
-    st.session_state.messages.append(
-        {"role": "You", "content": user_input}
-    )
+if prompt:
+    st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # connect your RAG system here
+    with st.chat_message("user"):
+        st.write(prompt)
+
+    # ---- YOUR RAG SYSTEM HERE ----
     answer = "AI response will appear here."
+    # replace with your OpenAI response
+    # ------------------------------
+
+    with st.chat_message("assistant"):
+        st.write(answer)
 
     st.session_state.messages.append(
-        {"role": "AI", "content": answer}
+        {"role": "assistant", "content": answer}
     )
-
-    st.rerun()
 
 st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)

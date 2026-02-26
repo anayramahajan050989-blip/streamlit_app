@@ -1,100 +1,72 @@
-import streamlit as st
-import streamlit.components.v1 as components
+<!DOCTYPE html>
+<html>
+<head>
+<title>Rajat Mahajan | DevOps Engineer</title>
+<style>
+body {
+font-family: Arial;
+margin: 0;
+background: #f5f7fa;
+}
+header {
+background: #0a2540;
+color: white;
+padding: 30px;
+text-align: center;
+}
+section {
+padding: 40px;
+max-width: 900px;
+margin: auto;
+}
+h2 {
+color: #0a2540;
+}
+.card {
+background: white;
+padding: 20px;
+margin-bottom: 20px;
+border-radius: 8px;
+box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+</style>
+</head>
 
-# Page config
-st.set_page_config(page_title="Emerging Technologies & Consultancy",
-                   page_icon="🚀",
-                   layout="wide")
+<body>
 
-# Sidebar Navigation
-st.sidebar.title("Navigation")
-page = st.sidebar.radio("Go to", 
-                        ["Home", "About Us", "Services", "Projects", "Contact"])
+<header>
+<h1>Rajat Mahajan</h1>
+<p>DevOps Engineer | Cloud Architect | 14+ Years Experience</p>
+</header>
 
-# ================= HOME =================
-if page == "Home":
-    st.title("🚀 Emerging Technologies & Consultancy")
-    st.subheader("Innovating Today. Transforming Tomorrow.")
+<section>
+<div class="card">
+<h2>About</h2>
+<p>Experienced DevOps Engineer specializing in AWS, GCP, Kubernetes, and CI/CD automation.</p>
+</div>
 
-    st.write("""
-    Welcome to Emerging Technologies & Consultancy.
-    We specialize in delivering cutting-edge technology solutions
-    for modern businesses.
-    """)
+<div class="card">
+<h2>Skills</h2>
+<p>AWS, GCP, Terraform, Docker, Kubernetes, Jenkins, Git, Helm, Datadog</p>
+</div>
 
-    st.image("https://images.unsplash.com/photo-1519389950473-47ba0277781c",
-             use_column_width=True)
+<div class="card">
+<h2>Experience</h2>
+<ul>
+<li>PWC – DevOps Manager (2023–Present)</li>
+<li>Nagarro – DevOps Lead (2019–2023)</li>
+<li>Accenture – Sr. Software Engineer (2017–2019)</li>
+<li>Wipro – Consultant (2015–2017)</li>
+<li>HCL – Analyst (2011–2015)</li>
+</ul>
+</div>
 
-# ================= ABOUT =================
-elif page == "About Us":
-    st.title("About Us")
+<div class="card">
+<h2>Contact</h2>
+<p>Email: rajatmahajan.89@gmail.com</p>
+<p>Phone: 8860511115</p>
+</div>
+</section>
 
-    st.write("""
-    Emerging Technologies & Consultancy is a forward-thinking firm
-    focused on digital transformation, AI solutions, cloud computing,
-    and strategic technology consulting.
-    """)
-
-    st.write("### Our Mission")
-    st.write("To empower organizations with innovative and scalable technology solutions.")
-
-    st.write("### Our Vision")
-    st.write("To become a global leader in emerging technology consulting.")
-
-# ================= SERVICES =================
-elif page == "Services":
-    st.title("Our Services")
-
-    st.markdown("""
-    - 🤖 Artificial Intelligence & Machine Learning  
-    - ☁️ Cloud Solutions & DevOps  
-    - 📊 Data Analytics & Business Intelligence  
-    - 🔐 Cybersecurity Consulting  
-    - 🌐 Web & Application Development  
-    """)
-
-# ================= PROJECTS =================
-elif page == "Projects":
-    st.title("Our Projects")
-
-    st.write("""
-    Here are some of our key solution areas:
-    """)
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.subheader("AI Automation Platform")
-        st.write("Enterprise automation using AI-driven workflows.")
-
-    with col2:
-        st.subheader("Cloud Migration Suite")
-        st.write("Helping enterprises transition securely to the cloud.")
-
-# ================= CONTACT =================
-elif page == "Contact":
-    st.title("Contact Us")
-
-    st.write("📍 Location: Your City, Your Country")
-    st.write("📧 Email: info@emergingtechconsult.com")
-    st.write("📞 Phone: +123 456 7890")
-
-    st.write("### Send us a message")
-
-    name = st.text_input("Your Name")
-    email = st.text_input("Your Email")
-    message = st.text_area("Your Message")
-
-    if st.button("Submit"):
-        st.success("Thank you! We will get back to you soon.")
-
-
-components.html("""
-<script type="module">
-  import Chatbot from "https://cdn.jsdelivr.net/gh/FlowiseAI/FlowiseChatEmbed/dist/web.js"
-  Chatbot.init({
-      chatflowid: "ac2a29aa-def6-428c-9d74-0e58b18b67cd",
-      apiHost: "http://localhost:3000",
-  })
-</script>
-""", height=600)
+</body>
+</html>

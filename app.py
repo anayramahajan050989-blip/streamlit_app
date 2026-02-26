@@ -125,34 +125,46 @@ st.markdown("## Skills")
 st.markdown(f'<div class="card">{resume_text[3000:4500]}</div>', unsafe_allow_html=True)
 
 # -----------------------------
-# CHATBOT (CORRECT ORDER)
+# CHATBOT (FIXED INPUT + STREAM)
 # -----------------------------
 st.sidebar.title("AI Resume Assistant")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-if "streaming" not in st.session_state:
-    st.session_state.streaming = False
+# Container where messages live
+messages_container = st.sidebar.container()
 
-# 1. Show messages FIRST
-for msg in st.session_state.messages:
-    with st.sidebar.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+# Render messages
+with messages_container:
+    for msg in st.session_state.messages:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
 
-# 2. Stream assistant response ABOVE input
-if st.session_state.streaming:
-    prompt = st.session_state.last_prompt
-    context = retrieve_context(prompt)
+# INPUT ALWAYS BELOW MESSAGE CONTAINER
+prompt = st.sidebar.chat_input("Ask about Rajat Mahajan...")
 
-    with st.sidebar.chat_message("assistant"):
-        placeholder = st.empty()
-        full_response = ""
+if prompt:
+    # Save user message
+    st.session_state.messages.append(
+        {"role": "user", "content": prompt}
+    )
 
-        stream = client.responses.stream(
-            model="gpt-4o-mini",
-            input=f"""
-You are an AI assistant answering questions about Rajat Mahajan.
+    # Re-render messages immediately
+    with messages_container:
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        with st.chat_message("assistant"):
+            placeholder = st.empty()
+            full_response = ""
+
+            context = retrieve_context(prompt)
+
+            stream = client.responses.stream(
+                model="gpt-4o-mini",
+                input=f"""
+Answer questions about Rajat Mahajan using this resume context.
 
 Context:
 {context}
@@ -160,30 +172,15 @@ Context:
 Question:
 {prompt}
 """
-        )
+            )
 
-        for event in stream:
-            if event.type == "response.output_text.delta":
-                full_response += event.delta
-                placeholder.markdown(full_response)
+            for event in stream:
+                if event.type == "response.output_text.delta":
+                    full_response += event.delta
+                    placeholder.markdown(full_response)
 
-        stream.close()
+            stream.close()
 
     st.session_state.messages.append(
         {"role": "assistant", "content": full_response}
     )
-
-    st.session_state.streaming = False
-    st.rerun()
-
-# 3. INPUT ALWAYS LAST (fixed bottom)
-prompt = st.sidebar.chat_input("Ask about Rajat Mahajan...")
-
-if prompt:
-    st.session_state.messages.append(
-        {"role": "user", "content": prompt}
-    )
-
-    st.session_state.last_prompt = prompt
-    st.session_state.streaming = True
-    st.rerun()

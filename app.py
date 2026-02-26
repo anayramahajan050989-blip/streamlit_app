@@ -3,99 +3,51 @@ from openai import OpenAI
 from sentence_transformers import SentenceTransformer
 from sklearn.neighbors import NearestNeighbors
 from docx import Document
-import numpy as np
 
-st.set_page_config(
-    page_title="Rajat Mahajan",
-    page_icon="🚀",
-    layout="wide"
-)
+st.set_page_config(page_title="Rajat Mahajan", layout="wide")
 
-# ---------------------------------------------------
-# Bright & Colorful UI
-# ---------------------------------------------------
+# -----------------------------
+# COLORFUL UI
+# -----------------------------
 st.markdown("""
 <style>
 
-body {
-    background: linear-gradient(135deg, #ff9a9e, #fad0c4, #a18cd1, #fbc2eb);
-    background-size: 400% 400%;
-}
-
 .main {
-    background: linear-gradient(120deg,#ffecd2,#fcb69f);
-}
-
-h1 {
-    font-size: 60px;
-    font-weight: 800;
-    background: linear-gradient(90deg,#ff0080,#7928ca,#2afadf);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-h2 {
-    color: #5f27cd;
+background: linear-gradient(120deg,#ffecd2,#fcb69f);
 }
 
 .hero {
-    padding: 40px;
-    border-radius: 20px;
-    background: linear-gradient(135deg,#667eea,#764ba2);
-    color: white;
-    margin-bottom: 30px;
+padding:40px;
+border-radius:20px;
+background: linear-gradient(135deg,#667eea,#764ba2);
+color:white;
+margin-bottom:25px;
 }
 
 .card {
-    padding: 25px;
-    border-radius: 20px;
-    background: linear-gradient(135deg,#ff758c,#ff7eb3);
-    color: white;
-    box-shadow: 0px 10px 25px rgba(0,0,0,0.15);
-    margin-bottom: 20px;
-}
-
-.card2 {
-    padding: 25px;
-    border-radius: 20px;
-    background: linear-gradient(135deg,#43e97b,#38f9d7);
-    color: black;
-    box-shadow: 0px 10px 25px rgba(0,0,0,0.15);
-    margin-bottom: 20px;
-}
-
-.card3 {
-    padding: 25px;
-    border-radius: 20px;
-    background: linear-gradient(135deg,#fa709a,#fee140);
-    color: black;
-    box-shadow: 0px 10px 25px rgba(0,0,0,0.15);
-    margin-bottom: 20px;
+padding:25px;
+border-radius:18px;
+background: linear-gradient(135deg,#43e97b,#38f9d7);
+margin-bottom:20px;
+box-shadow:0px 10px 25px rgba(0,0,0,0.15);
 }
 
 section[data-testid="stSidebar"] {
-    width: 380px;
-    background: linear-gradient(180deg,#667eea,#764ba2);
-}
-
-.chat-title {
-    font-size: 22px;
-    font-weight: 700;
-    color: white;
-    margin-bottom: 10px;
+width:420px;
+background: linear-gradient(180deg,#667eea,#764ba2);
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------------------------------------------
+# -----------------------------
 # OpenAI
-# ---------------------------------------------------
+# -----------------------------
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-# ---------------------------------------------------
+# -----------------------------
 # Load Resume
-# ---------------------------------------------------
+# -----------------------------
 @st.cache_data
 def load_resume():
     doc = Document("Resume.docx")
@@ -107,9 +59,9 @@ def load_resume():
 
 resume_text = load_resume()
 
-# ---------------------------------------------------
+# -----------------------------
 # Chunking
-# ---------------------------------------------------
+# -----------------------------
 def chunk_text(text, size=500, overlap=100):
     chunks = []
     start = 0
@@ -121,90 +73,66 @@ def chunk_text(text, size=500, overlap=100):
 
 chunks = chunk_text(resume_text)
 
-# ---------------------------------------------------
-# Embedding Model
-# ---------------------------------------------------
+# -----------------------------
+# Embeddings
+# -----------------------------
 @st.cache_resource
 def load_model():
     return SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
 model = load_model()
 
-# ---------------------------------------------------
+# -----------------------------
 # Vector DB
-# ---------------------------------------------------
+# -----------------------------
 @st.cache_resource
 def build_index(chunks):
     embeddings = model.encode(chunks)
     nn = NearestNeighbors(n_neighbors=4, metric="cosine")
     nn.fit(embeddings)
-    return nn, embeddings
+    return nn
 
-vector_db, embeddings = build_index(chunks)
+vector_db = build_index(chunks)
 
-# ---------------------------------------------------
-# Retrieve context
-# ---------------------------------------------------
+# -----------------------------
+# Retrieval
+# -----------------------------
 def retrieve_context(query):
     query_vec = model.encode([query])
     distances, indices = vector_db.kneighbors(query_vec, n_neighbors=4)
     return "\n\n".join([chunks[i] for i in indices[0]])
 
-# ---------------------------------------------------
-# HERO SECTION
-# ---------------------------------------------------
+# -----------------------------
+# HERO
+# -----------------------------
 st.markdown("""
 <div class="hero">
 <h1>Rajat Mahajan</h1>
-<h3>DevOps Engineer | Cloud | Automation | AI Enthusiast</h3>
-<p>This is an AI-powered interactive portfolio website.</p>
+<h3>AI Powered Portfolio</h3>
 </div>
 """, unsafe_allow_html=True)
 
-# ---------------------------------------------------
-# About Section
-# ---------------------------------------------------
-st.markdown("## About Rajat")
+# -----------------------------
+# CONTENT
+# -----------------------------
+st.markdown("## About")
+st.markdown(f'<div class="card">{resume_text[:1500]}</div>', unsafe_allow_html=True)
 
-st.markdown(f"""
-<div class="card">
-{resume_text[:1200]}
-</div>
-""", unsafe_allow_html=True)
-
-# ---------------------------------------------------
-# Experience Section
-# ---------------------------------------------------
 st.markdown("## Experience")
+st.markdown(f'<div class="card">{resume_text[1500:3000]}</div>', unsafe_allow_html=True)
 
-st.markdown(f"""
-<div class="card2">
-{resume_text[1200:2400]}
-</div>
-""", unsafe_allow_html=True)
+st.markdown("## Skills")
+st.markdown(f'<div class="card">{resume_text[3000:4500]}</div>', unsafe_allow_html=True)
 
-# ---------------------------------------------------
-# Skills Section
-# ---------------------------------------------------
-st.markdown("## Skills & Technologies")
-
-st.markdown(f"""
-<div class="card3">
-{resume_text[2400:3600]}
-</div>
-""", unsafe_allow_html=True)
-
-# ---------------------------------------------------
-# Chatbot Sidebar
-# ---------------------------------------------------
-st.sidebar.markdown(
-    '<div class="chat-title">🤖 AI Resume Assistant</div>',
-    unsafe_allow_html=True
-)
+# -----------------------------
+# CHATBOT
+# -----------------------------
+st.sidebar.title("AI Resume Assistant")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# messages container
 chat_container = st.sidebar.container()
 
 with chat_container:
@@ -212,35 +140,41 @@ with chat_container:
         with st.chat_message(msg["role"]):
             st.write(msg["content"])
 
-prompt = st.sidebar.chat_input("Ask about Rajat...")
+# input always at bottom
+prompt = st.sidebar.chat_input("Ask about Rajat Mahajan")
 
 if prompt:
-    st.session_state.messages.append(
-        {"role": "user", "content": prompt}
-    )
+    st.session_state.messages.append({"role": "user", "content": prompt})
 
     context = retrieve_context(prompt)
 
-    response = client.responses.create(
-        model="gpt-4o-mini",
-        input=f"""
-You are an AI assistant answering questions about Rajat Mahajan.
+    with chat_container:
+        with st.chat_message("assistant"):
+            placeholder = st.empty()
+            full_response = ""
 
-Resume Context:
+            stream = client.responses.stream(
+                model="gpt-4o-mini",
+                input=f"""
+You are an assistant answering questions about Rajat Mahajan.
+
+Context:
 {context}
 
 Question:
 {prompt}
-
-Provide a clear professional answer.
-If not found in resume, say you don't have that information.
 """
-    )
+            )
 
-    answer = response.output_text
+            for event in stream:
+                if event.type == "response.output_text.delta":
+                    full_response += event.delta
+                    placeholder.markdown(full_response)
+
+            stream.close()
 
     st.session_state.messages.append(
-        {"role": "assistant", "content": answer}
+        {"role": "assistant", "content": full_response}
     )
 
     st.rerun()

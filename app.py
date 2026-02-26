@@ -6,9 +6,9 @@ from docx import Document
 
 st.set_page_config(page_title="Rajat Mahajan", layout="wide")
 
-# -----------------------------
-# Bright UI
-# -----------------------------
+# -------------------------------------------------
+# UI Styling
+# -------------------------------------------------
 st.markdown("""
 <style>
 
@@ -32,22 +32,48 @@ margin-bottom:20px;
 box-shadow:0px 10px 25px rgba(0,0,0,0.15);
 }
 
-section[data-testid="stSidebar"] {
-width:420px;
-background: linear-gradient(180deg,#667eea,#764ba2);
+/* Chat bubble */
+.chat-button {
+position: fixed;
+bottom: 30px;
+right: 30px;
+width: 65px;
+height: 65px;
+border-radius: 50%;
+font-size: 28px;
+background: linear-gradient(135deg,#ff4ecd,#7a5cff);
+color: white;
+border: none;
+box-shadow: 0px 10px 30px rgba(0,0,0,0.25);
+z-index: 1000;
+}
+
+/* Chat window */
+.chat-window {
+position: fixed;
+bottom: 110px;
+right: 30px;
+width: 380px;
+height: 520px;
+background: white;
+border-radius: 18px;
+box-shadow: 0px 15px 40px rgba(0,0,0,0.25);
+padding: 10px;
+overflow: hidden;
+z-index: 1000;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# -----------------------------
+# -------------------------------------------------
 # OpenAI
-# -----------------------------
+# -------------------------------------------------
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-# -----------------------------
+# -------------------------------------------------
 # Load Resume
-# -----------------------------
+# -------------------------------------------------
 @st.cache_data
 def load_resume():
     doc = Document("Resume.docx")
@@ -59,9 +85,9 @@ def load_resume():
 
 resume_text = load_resume()
 
-# -----------------------------
+# -------------------------------------------------
 # Chunking
-# -----------------------------
+# -------------------------------------------------
 def chunk_text(text, size=500, overlap=100):
     chunks = []
     start = 0
@@ -73,18 +99,18 @@ def chunk_text(text, size=500, overlap=100):
 
 chunks = chunk_text(resume_text)
 
-# -----------------------------
-# Embeddings
-# -----------------------------
+# -------------------------------------------------
+# Embedding model
+# -------------------------------------------------
 @st.cache_resource
 def load_model():
     return SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
 model = load_model()
 
-# -----------------------------
-# Vector Search
-# -----------------------------
+# -------------------------------------------------
+# Vector search
+# -------------------------------------------------
 @st.cache_resource
 def build_index(chunks):
     embeddings = model.encode(chunks)
@@ -94,17 +120,17 @@ def build_index(chunks):
 
 vector_db = build_index(chunks)
 
-# -----------------------------
+# -------------------------------------------------
 # Retrieval
-# -----------------------------
+# -------------------------------------------------
 def retrieve_context(query):
     query_vec = model.encode([query])
     distances, indices = vector_db.kneighbors(query_vec, n_neighbors=4)
     return "\n\n".join([chunks[i] for i in indices[0]])
 
-# -----------------------------
+# -------------------------------------------------
 # HERO
-# -----------------------------
+# -------------------------------------------------
 st.markdown("""
 <div class="hero">
 <h1>Rajat Mahajan</h1>
@@ -112,9 +138,9 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# -----------------------------
-# Website Content
-# -----------------------------
+# -------------------------------------------------
+# CONTENT
+# -------------------------------------------------
 st.markdown("## About")
 st.markdown(f'<div class="card">{resume_text[:1500]}</div>', unsafe_allow_html=True)
 
@@ -124,38 +150,58 @@ st.markdown(f'<div class="card">{resume_text[1500:3000]}</div>', unsafe_allow_ht
 st.markdown("## Skills")
 st.markdown(f'<div class="card">{resume_text[3000:4500]}</div>', unsafe_allow_html=True)
 
-# -----------------------------
-# CHATBOT (PROPER STREAMLIT FLOW)
-# -----------------------------
-st.sidebar.title("AI Resume Assistant")
+# -------------------------------------------------
+# CHATBOT STATE
+# -------------------------------------------------
+if "chat_open" not in st.session_state:
+    st.session_state.chat_open = False
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Render all messages FIRST
-for msg in st.session_state.messages:
-    with st.sidebar.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+# -------------------------------------------------
+# Chat bubble button
+# -------------------------------------------------
+col1, col2, col3 = st.columns([8,1,1])
+with col3:
+    if st.button("💬", key="chat_toggle"):
+        st.session_state.chat_open = not st.session_state.chat_open
 
-# Input always at bottom
-prompt = st.sidebar.chat_input("Ask about Rajat Mahajan...")
+# -------------------------------------------------
+# Chat window
+# -------------------------------------------------
+if st.session_state.chat_open:
 
-if prompt:
-    # Save user message
-    st.session_state.messages.append(
-        {"role": "user", "content": prompt}
-    )
+    st.markdown('<div class="chat-window">', unsafe_allow_html=True)
 
-    # Generate response
-    context = retrieve_context(prompt)
+    st.markdown("### AI Resume Assistant")
 
-    full_response = ""
-    placeholder = st.sidebar.empty()
+    # Show messages
+    chat_container = st.container()
+    with chat_container:
+        for msg in st.session_state.messages:
+            with st.chat_message(msg["role"]):
+                st.markdown(msg["content"])
 
-    stream = client.responses.stream(
-        model="gpt-4o-mini",
-        input=f"""
-Answer questions about Rajat Mahajan using this resume context.
+    # Input (always last)
+    prompt = st.chat_input("Ask about Rajat Mahajan")
+
+    if prompt:
+        st.session_state.messages.append(
+            {"role": "user", "content": prompt}
+        )
+
+        context = retrieve_context(prompt)
+
+        with chat_container:
+            with st.chat_message("assistant"):
+                placeholder = st.empty()
+                full_response = ""
+
+                stream = client.responses.stream(
+                    model="gpt-4o-mini",
+                    input=f"""
+Answer questions about Rajat Mahajan using this resume.
 
 Context:
 {context}
@@ -163,22 +209,19 @@ Context:
 Question:
 {prompt}
 """
-    )
+                )
 
-    with placeholder.container():
-        with st.chat_message("assistant"):
-            message_placeholder = st.empty()
+                for event in stream:
+                    if event.type == "response.output_text.delta":
+                        full_response += event.delta
+                        placeholder.markdown(full_response)
 
-            for event in stream:
-                if event.type == "response.output_text.delta":
-                    full_response += event.delta
-                    message_placeholder.markdown(full_response)
+                stream.close()
 
-    stream.close()
+        st.session_state.messages.append(
+            {"role": "assistant", "content": full_response}
+        )
 
-    # Save assistant message
-    st.session_state.messages.append(
-        {"role": "assistant", "content": full_response}
-    )
+        st.rerun()
 
-    st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)

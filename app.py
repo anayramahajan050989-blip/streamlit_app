@@ -86,3 +86,16 @@ elif page == "Contact":
 
     if st.button("Submit"):
         st.success("Thank you! We will get back to you soon.")
+
+
+import requests
+
+API_URL = "http://localhost:3000/api/v1/prediction/ac2a29aa-def6-428c-9d74-0e58b18b67cd"
+
+def query(payload):
+    response = requests.post(API_URL, json=payload)
+    return response.json()
+    
+output = query({
+    "question": "Hey, how are you?",
+})

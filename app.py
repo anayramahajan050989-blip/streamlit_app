@@ -1,53 +1,46 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Rajat Mahajan | DevOps Engineer</title>
+import streamlit as st
+
+st.set_page_config(page_title="Rajat Mahajan", layout="wide")
+
+html_code = """
 <style>
 body {
-font-family: Arial;
-margin: 0;
-background: #f5f7fa;
+    font-family: Arial;
 }
-header {
-background: #0a2540;
-color: white;
-padding: 30px;
-text-align: center;
-}
-section {
-padding: 40px;
-max-width: 900px;
-margin: auto;
-}
-h2 {
-color: #0a2540;
+.header {
+    background: #0a2540;
+    color: white;
+    padding: 30px;
+    text-align: center;
+    border-radius: 10px;
 }
 .card {
-background: white;
-padding: 20px;
-margin-bottom: 20px;
-border-radius: 8px;
-box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: #f5f7fa;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 10px;
 }
 </style>
-</head>
 
-<body>
+<div class="header">
+    <h1>Rajat Mahajan</h1>
+    <p>DevOps Engineer | Cloud Architect | 14+ Years Experience</p>
+</div>
 
-<header>
-<h1>Rajat Mahajan</h1>
-<p>DevOps Engineer | Cloud Architect | 14+ Years Experience</p>
-</header>
-
-<section>
 <div class="card">
 <h2>About</h2>
-<p>Experienced DevOps Engineer specializing in AWS, GCP, Kubernetes, and CI/CD automation.</p>
+<p>Experienced DevOps Engineer and Manager specializing in AWS, GCP, Kubernetes, and CI/CD automation.</p>
 </div>
 
 <div class="card">
 <h2>Skills</h2>
-<p>AWS, GCP, Terraform, Docker, Kubernetes, Jenkins, Git, Helm, Datadog</p>
+<ul>
+<li>AWS, GCP</li>
+<li>Terraform, Jenkins</li>
+<li>Docker, Kubernetes</li>
+<li>Git, Helm</li>
+<li>Datadog, Splunk</li>
+</ul>
 </div>
 
 <div class="card">
@@ -66,7 +59,6 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 <p>Email: rajatmahajan.89@gmail.com</p>
 <p>Phone: 8860511115</p>
 </div>
-</section>
+"""
 
-</body>
-</html>
+st.markdown(html_code, unsafe_allow_html=True)

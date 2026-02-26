@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 
 # Page config
 st.set_page_config(page_title="Emerging Technologies & Consultancy",
@@ -88,14 +89,12 @@ elif page == "Contact":
         st.success("Thank you! We will get back to you soon.")
 
 
-import requests
-
-API_URL = "http://localhost:3000/api/v1/prediction/ac2a29aa-def6-428c-9d74-0e58b18b67cd"
-
-def query(payload):
-    response = requests.post(API_URL, json=payload)
-    return response.json()
-    
-output = query({
-    "question": "Hey, how are you?",
-})
+components.html("""
+<script type="module">
+  import Chatbot from "https://cdn.jsdelivr.net/gh/FlowiseAI/FlowiseChatEmbed/dist/web.js"
+  Chatbot.init({
+      chatflowid: "ac2a29aa-def6-428c-9d74-0e58b18b67cd",
+      apiHost: "http://localhost:3000",
+  })
+</script>
+""", height=600)

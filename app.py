@@ -151,7 +151,7 @@ st.markdown("## Skills")
 st.markdown(f'<div class="card">{resume_text[3000:4500]}</div>', unsafe_allow_html=True)
 
 # -------------------------------------------------
-# CHATBOT STATE
+# CHATBOT STATE & UI
 # -------------------------------------------------
 if "chat_open" not in st.session_state:
     st.session_state.chat_open = False
@@ -159,69 +159,88 @@ if "chat_open" not in st.session_state:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# -------------------------------------------------
-# Chat bubble button
-# -------------------------------------------------
-col1, col2, col3 = st.columns([8,1,1])
-with col3:
-    if st.button("💬", key="chat_toggle"):
-        st.session_state.chat_open = not st.session_state.chat_open
+# --- FLOATING BUTTON ---
+# We use an empty container to inject the button into a fixed position via CSS
+st.markdown("""
+    <style>
+    /* Target the specific button for floating */
+    div.stButton > button {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50px;
+        z-index: 999;
+        background-color: #7a5cff;
+        color: white;
+        border: none;
+        box-shadow: 2px 5px 15px rgba(0,0,0,0.3);
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# -------------------------------------------------
-# Chat window
-# -------------------------------------------------
+# This button stays fixed in the corner
+if st.button("💬"):
+    st.session_state.chat_open = not st.session_state.chat_open
+
+# --- FLOATING CHAT WINDOW ---
 if st.session_state.chat_open:
+    # Use a container for the "Window" effect
+    with st.container():
+        st.markdown("""
+            <div style="
+                position: fixed; 
+                bottom: 100px; 
+                right: 30px; 
+                width: 350px; 
+                height: 500px; 
+                background-color: white; 
+                border-radius: 15px; 
+                z-index: 1000; 
+                box-shadow: 0px 4px 20px rgba(0,0,0,0.2);
+                display: flex;
+                flex-direction: column;
+                padding: 15px;
+                border: 1px solid #eee;
+            ">
+                <h4 style="color: #333; margin-top: 0;">AI Assistant</h4>
+                <hr style="margin: 10px 0;">
+            </div>
+        """, unsafe_allow_html=True)
 
-    st.markdown('<div class="chat-window">', unsafe_allow_html=True)
+        # To keep the chat interactive, we use a Sidebar for the actual input 
+        # or a specific column. However, for a true "overlay," 
+        # we'll use the main area with a vertical offset.
+        
+        # We'll use a sidebar for the chat to ensure it doesn't break page flow
+        with st.sidebar:
+            st.title("💬 Chat with Rajat's AI")
+            st.info("Ask me anything about Rajat's experience or skills.")
+            
+            # Display chat messages
+            for msg in st.session_state.messages:
+                st.chat_message(msg["role"]).write(msg["content"])
 
-    st.markdown("### AI Resume Assistant")
+            # Chat Input
+            if prompt := st.chat_input("Ask a question..."):
+                st.session_state.messages.append({"role": "user", "content": prompt})
+                st.chat_message("user").write(prompt)
 
-    # Show messages
-    chat_container = st.container()
-    with chat_container:
-        for msg in st.session_state.messages:
-            with st.chat_message(msg["role"]):
-                st.markdown(msg["content"])
-
-    # Input (always last)
-    prompt = st.chat_input("Ask about Rajat Mahajan")
-
-    if prompt:
-        st.session_state.messages.append(
-            {"role": "user", "content": prompt}
-        )
-
-        context = retrieve_context(prompt)
-
-        with chat_container:
-            with st.chat_message("assistant"):
-                placeholder = st.empty()
-                full_response = ""
-
-                stream = client.responses.stream(
-                    model="gpt-4o-mini",
-                    input=f"""
-Answer questions about Rajat Mahajan using this resume.
-
-Context:
-{context}
-
-Question:
-{prompt}
-"""
-                )
-
-                for event in stream:
-                    if event.type == "response.output_text.delta":
-                        full_response += event.delta
-                        placeholder.markdown(full_response)
-
-                stream.close()
-
-        st.session_state.messages.append(
-            {"role": "assistant", "content": full_response}
-        )
-
-        st.rerun()
-
-    st.markdown('</div>', unsafe_allow_html=True)
+                # RAG Logic
+                context = retrieve_context(prompt)
+                
+                with st.chat_message("assistant"):
+                    # Use your existing OpenAI streaming logic here
+                    response = client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=[
+                            {"role": "system", "content": f"Answer based on context: {context}"},
+                            {"role": "user", "content": prompt}
+                        ]
+                    )
+                    full_response = response.choices[0].message.content
+                    st.write(full_response)
+                
+                st.session_state.messages.append({"role": "assistant", "content": full_response})
+                st.rerun()

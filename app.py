@@ -125,23 +125,19 @@ st.markdown("## Skills")
 st.markdown(f'<div class="card">{resume_text[3000:4500]}</div>', unsafe_allow_html=True)
 
 # -----------------------------
-# CHATBOT (FIXED INPUT + STREAM)
+# CHATBOT (PROPER STREAMLIT FLOW)
 # -----------------------------
 st.sidebar.title("AI Resume Assistant")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Container where messages live
-messages_container = st.sidebar.container()
+# Render all messages FIRST
+for msg in st.session_state.messages:
+    with st.sidebar.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-# Render messages
-with messages_container:
-    for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
-
-# INPUT ALWAYS BELOW MESSAGE CONTAINER
+# Input always at bottom
 prompt = st.sidebar.chat_input("Ask about Rajat Mahajan...")
 
 if prompt:
@@ -150,20 +146,15 @@ if prompt:
         {"role": "user", "content": prompt}
     )
 
-    # Re-render messages immediately
-    with messages_container:
-        with st.chat_message("user"):
-            st.markdown(prompt)
+    # Generate response
+    context = retrieve_context(prompt)
 
-        with st.chat_message("assistant"):
-            placeholder = st.empty()
-            full_response = ""
+    full_response = ""
+    placeholder = st.sidebar.empty()
 
-            context = retrieve_context(prompt)
-
-            stream = client.responses.stream(
-                model="gpt-4o-mini",
-                input=f"""
+    stream = client.responses.stream(
+        model="gpt-4o-mini",
+        input=f"""
 Answer questions about Rajat Mahajan using this resume context.
 
 Context:
@@ -172,15 +163,22 @@ Context:
 Question:
 {prompt}
 """
-            )
+    )
+
+    with placeholder.container():
+        with st.chat_message("assistant"):
+            message_placeholder = st.empty()
 
             for event in stream:
                 if event.type == "response.output_text.delta":
                     full_response += event.delta
-                    placeholder.markdown(full_response)
+                    message_placeholder.markdown(full_response)
 
-            stream.close()
+    stream.close()
 
+    # Save assistant message
     st.session_state.messages.append(
         {"role": "assistant", "content": full_response}
     )
+
+    st.rerun()

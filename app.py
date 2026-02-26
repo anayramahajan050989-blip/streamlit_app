@@ -1,64 +1,77 @@
 import streamlit as st
 
-st.set_page_config(page_title="Rajat Mahajan", layout="wide")
+st.set_page_config(
+    page_title="Rajat Mahajan",
+    page_icon="☁️",
+    layout="wide"
+)
 
-html_code = """
-<style>
-body {
-    font-family: Arial;
-}
-.header {
-    background: #0a2540;
-    color: white;
-    padding: 30px;
-    text-align: center;
-    border-radius: 10px;
-}
-.card {
-    background: #f5f7fa;
-    padding: 20px;
-    margin-top: 20px;
-    border-radius: 10px;
-}
-</style>
+# Header
+st.title("Rajat Mahajan")
+st.subheader("DevOps Engineer | Cloud Architect | 14+ Years Experience")
 
-<div class="header">
-    <h1>Rajat Mahajan</h1>
-    <p>DevOps Engineer | Cloud Architect | 14+ Years Experience</p>
-</div>
+st.divider()
 
-<div class="card">
-<h2>About</h2>
-<p>Experienced DevOps Engineer and Manager specializing in AWS, GCP, Kubernetes, and CI/CD automation.</p>
-</div>
-
-<div class="card">
-<h2>Skills</h2>
-<ul>
-<li>AWS, GCP</li>
-<li>Terraform, Jenkins</li>
-<li>Docker, Kubernetes</li>
-<li>Git, Helm</li>
-<li>Datadog, Splunk</li>
-</ul>
-</div>
-
-<div class="card">
-<h2>Experience</h2>
-<ul>
-<li>PWC – DevOps Manager (2023–Present)</li>
-<li>Nagarro – DevOps Lead (2019–2023)</li>
-<li>Accenture – Sr. Software Engineer (2017–2019)</li>
-<li>Wipro – Consultant (2015–2017)</li>
-<li>HCL – Analyst (2011–2015)</li>
-</ul>
-</div>
-
-<div class="card">
-<h2>Contact</h2>
-<p>Email: rajatmahajan.89@gmail.com</p>
-<p>Phone: 8860511115</p>
-</div>
+# About
+st.header("About")
+st.write(
 """
+Experienced DevOps Engineer and Manager with over 14 years of experience
+in cloud deployment, migration, automation, and infrastructure management.
+Specialized in AWS, GCP, Kubernetes, and CI/CD automation.
+"""
+)
 
-st.markdown(html_code, unsafe_allow_html=True)
+# Skills
+st.header("Skills & Technologies")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.subheader("Cloud")
+    st.write("- AWS")
+    st.write("- Google Cloud Platform")
+
+with col2:
+    st.subheader("DevOps Tools")
+    st.write("- Terraform")
+    st.write("- Jenkins")
+    st.write("- Docker")
+    st.write("- Kubernetes")
+
+with col3:
+    st.subheader("Monitoring")
+    st.write("- Datadog")
+    st.write("- Splunk")
+    st.write("- OMi")
+
+st.divider()
+
+# Experience
+st.header("Work Experience")
+
+st.subheader("PwC (2023 – Present)")
+st.write("DevOps Manager leading CI/CD, cloud automation, and Kubernetes deployments.")
+
+st.subheader("Nagarro (2019 – 2023)")
+st.write("DevOps Lead working on AWS infrastructure automation and cloud migration.")
+
+st.subheader("Accenture (2017 – 2019)")
+st.write("Senior Software Engineer handling monitoring and AWS administration.")
+
+st.subheader("Wipro (2015 – 2017)")
+st.write("Consultant working on monitoring and alerting systems.")
+
+st.subheader("HCL (2011 – 2015)")
+st.write("Analyst working on service assurance and automation.")
+
+st.divider()
+
+# Education
+st.header("Education")
+st.write("B.Tech (Computer Science) – GGSIPU, Delhi")
+
+# Contact
+st.header("Contact")
+st.write("Email: rajatmahajan.89@gmail.com")
+st.write("Phone: 8860511115")

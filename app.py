@@ -1,130 +1,223 @@
 import streamlit as st
-from openai import OpenAI
-from docx import Document
-from sentence_transformers import SentenceTransformer
-import faiss
-import numpy as np
 
-# -----------------------
-# Config
-# -----------------------
-st.set_page_config(page_title="Rajat Mahajan", layout="wide")
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+st.set_page_config(
+    page_title="Rajat Mahajan",
+    page_icon="☁️",
+    layout="wide"
+)
 
-# Free embedding model (very good + fast)
-EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+# ------------------------
+# Custom Styling
+# ------------------------
+st.markdown("""
+<style>
+.hero {
+    padding: 40px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: white;
+}
 
-# -----------------------
-# Load resume
-# -----------------------
-@st.cache_data
-def load_resume():
-    doc = Document("Resume.docx")
-    text = []
-    for p in doc.paragraphs:
-        if p.text.strip():
-            text.append(p.text)
-    return "\n".join(text)
+.card {
+    padding: 25px;
+    border-radius: 12px;
+    background: #f8fafc;
+    margin-bottom: 20px;
+    border: 1px solid #e2e8f0;
+}
 
-resume_text = load_resume()
+.section-title {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
 
-# -----------------------
-# Chunking
-# -----------------------
-def chunk_text(text, chunk_size=500, overlap=100):
-    chunks = []
-    start = 0
-    while start < len(text):
-        end = start + chunk_size
-        chunks.append(text[start:end])
-        start += chunk_size - overlap
-    return chunks
+.chat-button {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background-color: #2563eb;
+    color: white;
+    padding: 14px 20px;
+    border-radius: 50px;
+    font-weight: bold;
+    box-shadow: 0px 6px 18px rgba(0,0,0,0.2);
+    cursor: pointer;
+    z-index: 999;
+}
 
-chunks = chunk_text(resume_text)
+.chat-box {
+    position: fixed;
+    bottom: 90px;
+    right: 25px;
+    width: 360px;
+    height: 420px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0px 8px 30px rgba(0,0,0,0.25);
+    padding: 15px;
+    overflow-y: auto;
+}
+</style>
+""", unsafe_allow_html=True)
 
-# -----------------------
-# Embeddings
-# -----------------------
-@st.cache_resource
-def load_embedding_model():
-    return SentenceTransformer(EMBED_MODEL)
+# ------------------------
+# HERO SECTION
+# ------------------------
+st.markdown("""
+<div class="hero">
+<h1>Rajat Mahajan</h1>
+<h3>DevOps Engineer • Cloud Architect • 14+ Years Experience</h3>
+<p>
+Experienced DevOps leader specializing in cloud deployment, infrastructure automation,
+and scalable cloud architecture using AWS and GCP.
+</p>
+</div>
+""", unsafe_allow_html=True)
 
-embed_model = load_embedding_model()
+st.write("")
 
-@st.cache_resource
-def create_vector_store(chunks):
-    embeddings = embed_model.encode(chunks)
-    embeddings = np.array(embeddings).astype("float32")
+# ------------------------
+# MAIN CONTENT
+# ------------------------
+col1, col2 = st.columns([2, 1])
 
-    dim = embeddings.shape[1]
-    index = faiss.IndexFlatL2(dim)
-    index.add(embeddings)
+with col1:
 
-    return index, embeddings
+    st.markdown('<div class="section-title">Career Summary</div>', unsafe_allow_html=True)
 
-index, embeddings = create_vector_store(chunks)
+    st.markdown("""
+<div class="card">
+Rajat Mahajan is a seasoned DevOps Engineer and Manager with over 14 years of
+experience working with large enterprises and cloud-native platforms.
 
-# -----------------------
-# Retrieval
-# -----------------------
-def retrieve(query, top_k=4):
-    query_embedding = embed_model.encode([query]).astype("float32")
-    distances, indices = index.search(query_embedding, top_k)
-    results = [chunks[i] for i in indices[0]]
-    return results
+He has led multiple cloud transformation initiatives, automated CI/CD pipelines,
+and built scalable infrastructure using modern DevOps tools.
 
-# -----------------------
-# UI
-# -----------------------
-st.title("Rajat Mahajan")
-st.subheader("AI Resume Assistant")
+Key Expertise:
+• AWS & GCP Cloud Architecture  
+• Infrastructure as Code (Terraform)  
+• Kubernetes & Docker Deployments  
+• CI/CD Pipeline Automation  
+• Cloud Migration & Optimization  
+</div>
+""", unsafe_allow_html=True)
 
-st.write("Ask anything about Rajat Mahajan's experience, skills, or career.")
+    st.markdown('<div class="section-title">Professional Experience</div>', unsafe_allow_html=True)
 
-st.divider()
+    st.markdown("""
+<div class="card">
+<b>PWC — DevOps Manager (2023 – Present)</b>
+<ul>
+<li>Leading cloud automation initiatives</li>
+<li>Managing CI/CD strategy and deployment pipelines</li>
+<li>Terraform-based infrastructure automation</li>
+<li>Kubernetes deployments and monitoring</li>
+</ul>
 
-# Chat state
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+<b>Nagarro — DevOps Lead (2019 – 2023)</b>
+<ul>
+<li>Cloud migration and AWS infrastructure design</li>
+<li>Automated deployments using Jenkins and Kubernetes</li>
+<li>Security and code quality automation</li>
+</ul>
 
-# Show chat history
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.write(msg["content"])
+<b>Accenture — Senior Software Engineer (2017 – 2019)</b>
+<ul>
+<li>Cloud monitoring systems</li>
+<li>AWS administration and scripting</li>
+</ul>
 
-question = st.chat_input("Ask about Rajat Mahajan...")
+<b>Wipro — Consultant (2015 – 2017)</b>
 
-if question:
-    st.session_state.messages.append({"role": "user", "content": question})
+<b>HCL — Analyst (2011 – 2015)</b>
+</div>
+""", unsafe_allow_html=True)
 
-    with st.chat_message("user"):
-        st.write(question)
+    st.markdown('<div class="section-title">Technical Skills</div>', unsafe_allow_html=True)
 
-    # Retrieve relevant chunks
-    context_chunks = retrieve(question)
-    context = "\n\n".join(context_chunks)
+    st.markdown("""
+<div class="card">
+<b>Cloud Platforms</b><br>
+AWS, Google Cloud Platform
 
-    prompt = f"""
-You are an AI assistant answering questions about Rajat Mahajan.
-Use the provided resume context to answer accurately.
+<br><br>
 
-Context:
-{context}
+<b>DevOps Tools</b><br>
+Terraform, Jenkins, Docker, Kubernetes, Helm, Git, Rancher
 
-Question:
-{question}
-"""
+<br><br>
 
-    response = client.responses.create(
-        model="gpt-4o-mini",
-        input=prompt
-    )
+<b>Monitoring</b><br>
+Datadog, Splunk, OMi, NNMi
 
-    answer = response.output_text
+<br><br>
 
-    with st.chat_message("assistant"):
-        st.write(answer)
+<b>Programming</b><br>
+Shell, YAML, JSON, Groovy
+</div>
+""", unsafe_allow_html=True)
 
-    st.session_state.messages.append(
-        {"role": "assistant", "content": answer}
-    )
+with col2:
+
+    st.markdown("""
+<div class="card">
+<h3>Quick Info</h3>
+<b>Experience:</b> 14+ Years<br>
+<b>Current Role:</b> DevOps Manager<br>
+<b>Cloud:</b> AWS / GCP<br>
+<b>Location:</b> India<br>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("""
+<div class="card">
+<h3>Education</h3>
+B.Tech – Computer Science<br>
+GGSIPU, Delhi
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("""
+<div class="card">
+<h3>Strengths</h3>
+• Leadership<br>
+• Problem Solving<br>
+• Cloud Architecture<br>
+• Automation
+</div>
+""", unsafe_allow_html=True)
+
+# ------------------------
+# FLOATING CHATBOT BUTTON
+# ------------------------
+if "chat_open" not in st.session_state:
+    st.session_state.chat_open = False
+
+if st.button("💬 Ask AI", key="chat_btn"):
+    st.session_state.chat_open = not st.session_state.chat_open
+
+if st.session_state.chat_open:
+    st.markdown('<div class="chat-box">', unsafe_allow_html=True)
+
+    st.write("### AI Assistant")
+    st.write("Ask anything about Rajat Mahajan")
+
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+
+    for msg in st.session_state.messages:
+        st.write(f"**{msg['role']}**: {msg['content']}")
+
+    user_input = st.text_input("Your question")
+
+    if user_input:
+        st.session_state.messages.append({"role": "You", "content": user_input})
+
+        # (Here you will plug your RAG chatbot code)
+        answer = "AI response will appear here."
+
+        st.session_state.messages.append({"role": "AI", "content": answer})
+        st.rerun()
+
+    st.markdown('</div>', unsafe_allow_html=True)

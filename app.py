@@ -1,77 +1,82 @@
 import streamlit as st
+from openai import OpenAI
+from docx import Document
 
-st.set_page_config(
-    page_title="Rajat Mahajan",
-    page_icon="☁️",
-    layout="wide"
-)
+# OpenAI client
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-# Header
+st.set_page_config(page_title="Rajat Mahajan", layout="wide")
+
+# -------- Load Resume --------
+@st.cache_data
+def load_resume():
+    doc = Document("Resume.docx")
+    text = []
+    for para in doc.paragraphs:
+        text.append(para.text)
+    return "\n".join(text)
+
+resume_text = load_resume()
+
+# -------- Website Content --------
 st.title("Rajat Mahajan")
 st.subheader("DevOps Engineer | Cloud Architect | 14+ Years Experience")
 
 st.divider()
 
-# About
 st.header("About")
 st.write(
 """
-Experienced DevOps Engineer and Manager with over 14 years of experience
-in cloud deployment, migration, automation, and infrastructure management.
-Specialized in AWS, GCP, Kubernetes, and CI/CD automation.
+Experienced DevOps Engineer specializing in AWS, GCP, Kubernetes,
+CI/CD automation, and cloud migration.
 """
 )
 
-# Skills
-st.header("Skills & Technologies")
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.subheader("Cloud")
-    st.write("- AWS")
-    st.write("- Google Cloud Platform")
-
-with col2:
-    st.subheader("DevOps Tools")
-    st.write("- Terraform")
-    st.write("- Jenkins")
-    st.write("- Docker")
-    st.write("- Kubernetes")
-
-with col3:
-    st.subheader("Monitoring")
-    st.write("- Datadog")
-    st.write("- Splunk")
-    st.write("- OMi")
-
 st.divider()
 
-# Experience
-st.header("Work Experience")
+# -------- Chatbot Section --------
+st.header("Ask about Rajat Mahajan")
 
-st.subheader("PwC (2023 – Present)")
-st.write("DevOps Manager leading CI/CD, cloud automation, and Kubernetes deployments.")
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-st.subheader("Nagarro (2019 – 2023)")
-st.write("DevOps Lead working on AWS infrastructure automation and cloud migration.")
+# Show chat history
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.write(msg["content"])
 
-st.subheader("Accenture (2017 – 2019)")
-st.write("Senior Software Engineer handling monitoring and AWS administration.")
+user_question = st.chat_input("Ask something about Rajat Mahajan...")
 
-st.subheader("Wipro (2015 – 2017)")
-st.write("Consultant working on monitoring and alerting systems.")
+if user_question:
+    st.session_state.messages.append({"role": "user", "content": user_question})
 
-st.subheader("HCL (2011 – 2015)")
-st.write("Analyst working on service assurance and automation.")
+    with st.chat_message("user"):
+        st.write(user_question)
 
-st.divider()
+    prompt = f"""
+You are a helpful assistant answering questions about Rajat Mahajan.
+Use the resume information below to answer accurately.
+If the answer is not in the resume, say you don't have that information.
 
-# Education
-st.header("Education")
-st.write("B.Tech (Computer Science) – GGSIPU, Delhi")
+RESUME:
+{resume_text}
 
-# Contact
-st.header("Contact")
-st.write("Email: rajatmahajan.89@gmail.com")
-st.write("Phone: 8860511115")
+QUESTION:
+{user_question}
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        messages=[
+            {"role": "system", "content": "You answer questions about Rajat Mahajan."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.2
+    )
+
+    answer = response.choices[0].message.content
+
+    with st.chat_message("assistant"):
+        st.write(answer)
+
+    st.session_state.messages.append({"role": "assistant", "content": answer})

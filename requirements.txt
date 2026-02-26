@@ -1,6 +1,6 @@
 streamlit
 openai
-python-docx
 sentence-transformers
-faiss-cpu
+scikit-learn
+python-docx
 numpy

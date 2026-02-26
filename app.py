@@ -66,7 +66,7 @@ QUESTION:
 """
 
     response = client.chat.completions.create(
-        model="gpt-4.1-mini",
+        model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": "You answer questions about Rajat Mahajan."},
             {"role": "user", "content": prompt}
